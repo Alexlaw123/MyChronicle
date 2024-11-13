@@ -89,11 +89,7 @@ class UsageEventsChronicleSensor(context: Context) : ChronicleSensor {
             UsageEvents.Event.SHORTCUT_INVOCATION -> "Shortcut Invocation"
             UsageEvents.Event.DEVICE_SHUTDOWN -> "Device Shutdown"
             UsageEvents.Event.DEVICE_STARTUP -> "Device Startup"
-            UsageEvents.Event.MOVE_TO_BACKGROUND -> "Move to Background"
-            UsageEvents.Event.MOVE_TO_FOREGROUND -> "Move to Foreground"
             UsageEvents.Event.CONFIGURATION_CHANGE -> "Configuration Change"
-            UsageEvents.Event.SHORTCUT_INVOCATION -> "Shortcut Invocation"
-            UsageEvents.Event.USER_INTERACTION -> "User Interaction"
             UsageEvents.Event.NONE -> "None"
             else -> {
                 return "Unknown importance: $importance"
