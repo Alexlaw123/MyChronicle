@@ -76,7 +76,7 @@ class MainActivity : AppCompatActivity() {
         uploadStatusModel.outputWorkInfo.observe(this, workInfoObserver())
 
         if (enrollmentSettings.isEnrolled()) {
-
+        //if (true) {
             firebaseAnalytics.setUserId("${studyId}_${participantId}")
 
             studyIdText.text = studyId.toString()

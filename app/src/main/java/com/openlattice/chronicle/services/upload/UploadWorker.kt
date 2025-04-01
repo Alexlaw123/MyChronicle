@@ -15,7 +15,9 @@ import com.openlattice.chronicle.android.ChronicleSample
 import com.openlattice.chronicle.android.ChronicleUsageEvent
 import com.openlattice.chronicle.constants.FirebaseAnalyticsEvents
 import com.openlattice.chronicle.data.ParticipationStatus
+import com.openlattice.chronicle.models.ExtendedChronicleUsageEvent
 import com.openlattice.chronicle.models.ExtractedUsageEvent
+import com.openlattice.chronicle.models.FullUsageEvent
 import com.openlattice.chronicle.preferences.*
 import com.openlattice.chronicle.sensors.*
 import com.openlattice.chronicle.serialization.JsonSerializer
@@ -33,10 +35,13 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 const val LAST_UPLOADED_PLACEHOLDER = "Never"
+//const val PRODUCTION = "http://192.168.1.85:8000"
 const val PRODUCTION = "https://api.getmethodic.com"
 const val BATCH_SIZE = 10
 const val LAST_UPDATED_SETTING = "com.openlattice.chronicle.upload.LastUpdated"
-const val UPLOAD_INTERVAL_MIN = 15L
+//const val UPLOAD_INTERVAL_MIN = 15L
+const val UPLOAD_INTERVAL_MIN = 30L
+
 
 val TAG = UploadWorker::class.java.simpleName
 
@@ -115,13 +120,15 @@ class UploadWorker(context: Context, params: WorkerParameters) : Worker(context,
         })
 
         // If studyApi.enroll(...) fails
-        val chronicleId: UUID =
-            studyApi.enroll(studyId, participantId, deviceId, getDevice(deviceId))
+//        val chronicleId: UUID =
+//            studyApi.enroll(studyId, participantId, deviceId, getDevice(deviceId))
+        val chronicleId = UUID.fromString("5d720000-0000-0000-8000-000000000b4f")
         Log.i(TAG, "deviceId: $chronicleId")
 
         //Only run the upload job if the device is already enrolled or we are able to properly enroll.
         val queue = chronicleDb.queueEntryData()
         var nextEntries = queue.getNextEntries(BATCH_SIZE)
+        Log.i(TAG, "nextEntries: $nextEntries")
         var notEmptied = nextEntries.isNotEmpty()
         while (notEmptied) {
             limiter.acquire()
@@ -188,23 +195,34 @@ class UploadWorker(context: Context, params: WorkerParameters) : Worker(context,
         }
     }
 
-    private fun mapToModel(data: List<ChronicleSample>): List<ChronicleSample> {
-        return data.mapNotNull { datum ->
-            when (datum) {
-                is ExtractedUsageEvent -> ChronicleUsageEvent(
-                    studyId = studyId,
-                    participantId = participantId,
-                    appPackageName = datum.appPackageName,
-                    applicationLabel = datum.applicationLabel,
-                    timezone = datum.timezone,
-                    timestamp = datum.timestamp,
-                    user = datum.user,
-                    interactionType = datum.interactionType
-                )
-                else -> null
+        private fun mapToModel(data: List<ChronicleSample>): List<ChronicleSample> {
+            return data.mapNotNull { datum ->
+                when (datum) {
+//                    is ExtractedUsageEvent -> ChronicleUsageEvent(
+//                        studyId = studyId,
+//                        participantId = participantId,
+//                        appPackageName = datum.appPackageName,
+//                        applicationLabel = datum.applicationLabel,
+//                        timezone = datum.timezone,
+//                        timestamp = datum.timestamp,
+//                        user = datum.user,
+//                        interactionType = datum.interactionType
+//                    )
+                    is ExtendedChronicleUsageEvent -> FullUsageEvent(
+                        studyId = studyId,
+                        participantId = participantId,
+                        appPackageName = datum.appPackageName,
+                        className = datum.className,  // ✅ 新增字段
+                        interactionType = datum.interactionType,
+                        timestamp = datum.timestamp,
+                        timezone = datum.timezone,
+                        user = datum.user,
+                        applicationLabel = datum.applicationLabel
+                    )
+                    else -> null
+                }
             }
         }
-    }
 
     private fun getFirstValueOrNull(
         entity: SetMultimap<UUID, Any>,
@@ -221,8 +239,10 @@ class UploadWorker(context: Context, params: WorkerParameters) : Worker(context,
 
 fun scheduleUploadWork(context: Context) {
 
+    Log.i(TAG, "enter into usage upload worker scheduled")
+
     val workRequest: PeriodicWorkRequest =
-        PeriodicWorkRequestBuilder<UploadWorker>(UPLOAD_INTERVAL_MIN, TimeUnit.MINUTES)
+        PeriodicWorkRequestBuilder<UploadWorker>(UPLOAD_INTERVAL_MIN, TimeUnit.SECONDS)
             .build()
 
     WorkManager.getInstance(context).enqueueUniquePeriodicWork(

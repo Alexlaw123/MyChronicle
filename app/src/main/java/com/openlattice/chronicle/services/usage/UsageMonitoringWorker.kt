@@ -99,16 +99,17 @@ class UsageMonitoringWorker(context: Context, workerParameters: WorkerParameters
     private fun monitorUsage() {
 
         Log.i(TAG, "usage monitoring worker initialized")
-        analytics.logEvent(FirebaseAnalyticsEvents.USAGE_START, Bundle().apply {
-            putString(PARTICIPANT_ID, settings.getParticipantId())
-            putString(STUDY_ID, settings.getStudyId().toString())
-        })
+//        analytics.logEvent(FirebaseAnalyticsEvents.USAGE_START, Bundle().apply {
+//            putString(PARTICIPANT_ID, settings.getParticipantId())
+//            putString(STUDY_ID, settings.getStudyId().toString())
+//        })
 
         // only stop monitoring if data collection has been explicitly turned off
         if (settings.getParticipationStatus() == ParticipationStatus.NOT_ENROLLED) {
             Log.i(TAG, "participant not enrolled. exiting usage monitoring")
             return
         }
+        Log.i(TAG, "propertyTypeIds $propertyTypeIds")
 
         if (propertyTypeIds.isEmpty()) {
             return
@@ -183,7 +184,7 @@ class UsageMonitoringWorker(context: Context, workerParameters: WorkerParameters
 fun scheduleUsageMonitoringWork(context: Context) {
 
     val workRequest: PeriodicWorkRequest =
-        PeriodicWorkRequestBuilder<UsageMonitoringWorker>(15, TimeUnit.MINUTES)
+        PeriodicWorkRequestBuilder<UsageMonitoringWorker>(30, TimeUnit.SECONDS)
             .build()
 
     WorkManager.getInstance(context).enqueueUniquePeriodicWork(

@@ -35,7 +35,9 @@ import org.dmfs.rfc5545.recur.RecurrenceRule
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-const val NOTIFICATIONS_INTERVAL_MIN = 15L
+//const val NOTIFICATIONS_INTERVAL_MIN = 15L
+const val NOTIFICATIONS_INTERVAL_MIN = 1L
+
 const val NOTIFICATION_DELETED_ACTION = "NOTIFICATION_DELETED"
 const val CHANNEL_ID = "Chronicle"
 const val NOTIFICATION_DETAILS = "NOTIFICATION_DETAILS"

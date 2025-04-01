@@ -6,7 +6,7 @@ import android.content.Context
 import android.preference.PreferenceManager
 import android.util.Log
 import com.openlattice.chronicle.android.ChronicleData
-import com.openlattice.chronicle.models.ExtractedUsageEvent
+import com.openlattice.chronicle.models.ExtendedChronicleUsageEvent
 import com.openlattice.chronicle.utils.Utils.getAppFullName
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -44,21 +44,39 @@ class UsageEventsChronicleSensor(context: Context) : ChronicleSensor {
             val event: UsageEvents.Event = UsageEvents.Event()
             usageEvents.getNextEvent(event)
             usageEventsList.add(event)
+            Log.i(
+                "UsageEventDebug",
+                "EventType: ${event.eventType} | Package: ${event.packageName} | Class: ${event.className}"
+            )
         }
         Log.i(javaClass.name, "Collected ${usageEventsList.size} usage events.")
         val timezone = TimeZone.getDefault().id
 
+//        return ChronicleData(usageEventsList.map {
+//            ExtractedUsageEvent(
+//                appPackageName = it.packageName,
+//                interactionType = mapImportance(it.eventType),
+//                timestamp = OffsetDateTime.ofInstant(
+//                    Instant.ofEpochMilli(it.timeStamp),
+//                    ZoneOffset.UTC
+//                ),
+//                timezone = timezone,
+//                applicationLabel = getAppFullName(appContext, it.packageName),
+//                user = getTargetUser(it.timeStamp, users),
+//            )
+//        })
         return ChronicleData(usageEventsList.map {
-            ExtractedUsageEvent(
+            ExtendedChronicleUsageEvent(
                 appPackageName = it.packageName,
+                className = it.className,  // ✅ NEW
                 interactionType = mapImportance(it.eventType),
                 timestamp = OffsetDateTime.ofInstant(
                     Instant.ofEpochMilli(it.timeStamp),
                     ZoneOffset.UTC
                 ),
                 timezone = timezone,
-                applicationLabel = getAppFullName(appContext, it.packageName),
                 user = getTargetUser(it.timeStamp, users),
+                applicationLabel = getAppFullName(appContext, it.packageName)
             )
         })
     }

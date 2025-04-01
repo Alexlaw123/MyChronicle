@@ -146,6 +146,7 @@ class Enrollment : AppCompatActivity() {
         try {
             val studyId = UUID.fromString(studyIdStr)
             val deviceId = getDeviceId(applicationContext)
+            Log.i(javaClass.canonicalName, "studyId: $studyId ; device id: $deviceId")
 
             statusMessageText.visibility = View.INVISIBLE
             submitBtn.visibility = View.INVISIBLE
@@ -157,13 +158,16 @@ class Enrollment : AppCompatActivity() {
 
                 var chronicleId: UUID? = null
                 try {
-                    chronicleId = studyApi.enroll(
-                        studyId,
-                        participantId,
-                        deviceId,
-                        getDevice(deviceId)
-                    )
+//                    chronicleId = studyApi.enroll(
+//                        studyId,
+//                        participantId,
+//                        deviceId,
+//                        getDevice(deviceId)
 
+                    //)
+                    chronicleId = UUID.fromString("5d720000-0000-0000-8000-000000000b4f")
+
+                    Log.i(javaClass.canonicalName, "chronicleId: $chronicleId")
                 } catch (e: Exception) {
                     crashlytics.log("caught exception - studyId: \"$studyId\" ; participantId: \"$participantId\"")
                     FirebaseCrashlytics.getInstance().recordException(e)
@@ -172,6 +176,9 @@ class Enrollment : AppCompatActivity() {
                 // TODO: actually retrieve device id
                 if (chronicleId != null) {
                     Log.i(javaClass.canonicalName, "Chronicle id: " + chronicleId.toString())
+                    Log.i(javaClass.canonicalName, "applicationContext: " + applicationContext)
+
+
                     analytics.logEvent(FirebaseAnalyticsEvents.ENROLLMENT_SUCCESS, Bundle().apply {
                         putString(PARTICIPANT_ID, participantId)
                         putString(STUDY_ID, studyId.toString())
